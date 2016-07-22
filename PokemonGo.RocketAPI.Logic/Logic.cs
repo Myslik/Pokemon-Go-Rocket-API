@@ -13,8 +13,29 @@ using PokemonGo.RocketAPI.Logic.Utils;
 
 namespace PokemonGo.RocketAPI.Logic
 {
+    public class PlayerPositionChangedEventArgs : EventArgs
+    {
+        public PlayerPositionChangedEventArgs(double latitude, double longitude)
+        {
+            Latitude = latitude;
+            Longitude = longitude;
+        }
+
+        public double Latitude { get; private set; }
+        public double Longitude { get; private set; }
+    }
+
+    public delegate void PlayerPositionChangedHandler(object sender, PlayerPositionChangedEventArgs e);
+
     public class Logic
     {
+        public event PlayerPositionChangedHandler PlayerPositionChanged;
+
+        protected virtual void OnPlayerPositionChanged(double latitude, double longitude)
+        {
+            PlayerPositionChanged?.Invoke(this, new PlayerPositionChangedEventArgs(latitude, longitude));
+        }
+
         private readonly Client _client;
         private readonly ISettings _clientSettings;
         private readonly Inventory _inventory;
@@ -111,6 +132,7 @@ namespace PokemonGo.RocketAPI.Logic
                 var distance = Navigation.DistanceBetween2Coordinates(_client.CurrentLat, _client.CurrentLng, pokeStop.Latitude, pokeStop.Longitude);
 
                 var update = await _navigation.HumanLikeWalking(new Navigation.Location(pokeStop.Latitude, pokeStop.Longitude), _clientSettings.WalkingSpeedInKilometerPerHour);
+                OnPlayerPositionChanged(pokeStop.Latitude, pokeStop.Longitude);
 
                 var fortInfo = await _client.GetFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
                 var fortSearch = await _client.SearchFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
@@ -268,7 +290,7 @@ namespace PokemonGo.RocketAPI.Logic
             if (playerStat != null)
             {
                 var message = $"Player level {playerStat.Level:0} - ({(playerStat.Experience - playerStat.PrevLevelXp):0} / {(playerStat.NextLevelXp - playerStat.PrevLevelXp):0})";
-                System.Console.Title = message;
+                // System.Console.Title = message;
                 Logger.Write(message);
             }
             await Task.Delay(5000);

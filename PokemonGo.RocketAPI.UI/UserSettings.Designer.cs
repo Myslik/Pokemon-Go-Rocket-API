@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PokemonGo.RocketAPI.Console {
+namespace PokemonGo.RocketAPI.UI {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
